@@ -1,8 +1,8 @@
-#version 430
+#version 140
+//430
 
-
-in vec3 out_color;
-in vec2 out_uv;
+in vec2 screen;
+in vec2 dir;
 
 out vec4 finalColor;
 
@@ -78,6 +78,6 @@ float w = 0.0f;
 void main() {
   //vec3 color = vec3(psin(out_uv.x * 18.0f), pcos(out_uv.y * 18.0f), 1.0f); //* out_color;
 
-  vec3 color = vec3(1.0f, 1.0f, 1.0f) * mandelbrot(out_uv);
+  vec3 color = vec3(1.0f, 1.0f, 1.0f) * mandelbrot(dir);
   finalColor = vec4(color, 1.);
 }
