@@ -9,6 +9,7 @@
 using namespace std;
 using namespace glm;
 
+#include "CSG.h"
 #include "Scene.h"
 #include "Renderer.h"
 #include "Camera.h"
@@ -32,12 +33,17 @@ int main(int argc, char** argv)
     atexit(SDL_Quit);
 
 
-    Renderer renderer(WIDTH, HEIGHT, "shader");
+    std::string shader = "simple";
+    if (argc > 1)
+      shader = argv[1];
+    Renderer renderer(WIDTH, HEIGHT, shader);
     Camera camera(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f,0.0f,0.0f), vec2(90.0f, 90.0f));
 
     Scene scene();
     Material material(vec3(1.0f,0.0f,0.0f), 0.7f, 20.0f, 0.0f);
     Sphere sphere(vec3(0.0f, 0.0f, -10.0f), 1.0f, material);
+
+    CSG csg;
 
     bool done = false;
     while (!done)
