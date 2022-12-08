@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     atexit(SDL_Quit);
 
 
-    std::string shader = "simple";
+    std::string shader = "shader";
     if (argc > 1)
       shader = argv[1];
     Renderer renderer(WIDTH, HEIGHT, shader);
