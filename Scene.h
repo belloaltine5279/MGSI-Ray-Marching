@@ -3,8 +3,8 @@
 
 #include "iostream"
 #include <GL/glew.h>
-#include <GL/glew.h>
 #include <glm/glm.hpp>
+#include "glm/gtc/matrix_transform.hpp"
 #include <vector>
 
 #include "CSG.h"
@@ -28,6 +28,13 @@ class Scene{
         void removeObject(int id);
         void updateObject(int id,Object* o);
         std::vector<mat4> objectsToVec4s();
+        void getInfos(vector<mat4>& objectMatrices, vector<Material>& objectMaterials, vector<int>& objectTypes, vector<float>& objectDatas, 
+    vector<int>& csg_types, vector<float>& csg_values);
+
+    private:
+        void reccursiveInfos(CSG& csg_actuel,
+            vector<mat4>& objectMatrices, vector<Material>& objectMaterials, vector<int>& objectTypes, vector<float>& objectDatas, 
+            vector<int>& csg_types, vector<float>& csg_values);
 };
 
 #endif

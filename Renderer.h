@@ -15,6 +15,7 @@ using namespace std;
 using namespace glm;
 
 #include "Camera.h"
+#include "Scene.h"
 
 class Renderer{
 public:
@@ -23,7 +24,7 @@ public:
 
   void initOpenGL(std::string shaderBaseName);
 
-  void draw(Camera& camera);
+  void draw(Camera& camera, Scene& scene);
 private:
   SDL_Surface* window;
 

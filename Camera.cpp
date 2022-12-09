@@ -44,7 +44,7 @@ void Camera::setRotation(const vec3 &a) {
 }
 
 void Camera::move(const vec3 &m){
-    this->position + m ;
+    this->position += m ;
     this->flag = true ; // pour declancher que la camera a ete bouger
 }
 
@@ -70,6 +70,31 @@ vec3 Camera::getPosition() const {
 }
 vec3 Camera::getRotation() const {
     return this->rotation;
+}
+
+mat4 Camera::getRotationMatrix() const {
+    vec3 rotation = getRotation();
+    mat4 rotationMatrix(1.0);
+    rotationMatrix = rotate(mat4(1.0f), rotation.z, vec3(0.0f, 0.0f, 1.0f)) *
+            rotate(mat4(1.0f), rotation.y, vec3(0.0f, 1.0f, 0.0f)) *
+            rotate(mat4(1.0f), rotation.x, vec3(1.0f, 0.0f, 0.0f));
+    return rotationMatrix;
+}
+
+vec3 Camera::getForward() const {
+    vec4 forward(0.0f, 0.0f, 1.0f, 1.0f);
+    forward = getRotationMatrix() * forward;
+    return vec3(forward.x, forward.y, forward.z);
+}
+vec3 Camera::getRight() const {
+    vec4 right(1.0f, 0.0f, 0.0f, 1.0f);
+    right = getRotationMatrix() * right;
+    return vec3(right.x, right.y, right.z);
+}
+vec3 Camera::getUp() const {
+    vec4 up(0.0f, 1.0f, 0.0f, 1.0f);
+    up = getRotationMatrix() * up;
+    return vec3(up.x, up.y, up.z);
 }
 //vec3 Camera::getTranslation() const {
 //    return this->translation ;

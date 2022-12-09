@@ -7,6 +7,7 @@
 #include <GL/glew.h>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include "glm/gtc/matrix_transform.hpp"
 
 using namespace std;
 using namespace glm ;
@@ -42,6 +43,12 @@ int WIDTH = 800;
     vec2 getFieldOfView() const ; 
     vec3 getRotation() const ;
     //vec3 getTranslation() const ;
+
+    mat4 getRotationMatrix() const;
+
+    vec3 getForward() const;
+    vec3 getRight() const;
+    vec3 getUp() const;
     
     void move(const vec3 &) ; 
 

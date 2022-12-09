@@ -3,52 +3,42 @@
 
 uniform vec2 fielOfView;
 
+uniform vec3 cameraPosition;
+
 in vec2 screen;
-in vec2 dir;
+in vec3 dir;
+in vec2 coord;
 
 out vec4 finalColor;
 
-float psin(float x)
+float distSphere(vec3 point)
 {
-  return sin(x) * 0.5f + 0.5f;
-}
-float pcos(float x)
-{
-  return cos(x) * 0.5f + 0.5f;
-}
-
-float mandelbrot(vec2 pos)
-{
-float scale = 1.5f;
-//definition de la zone où on dessine
-float x = pos.x * 5 - 2.5f;
-float y = pos.y * 5 - 2.5f;
-float x0 = pos.x * (scale * 2.0f) - scale;
-float y0 = pos.y * (scale * 2.0f) - scale;
-
-
-float x2 = 0.0f;
-float y2 = 0.0f;
-float w = 0.0f;
-  for (int i = 0; i < 1000; i++)
-  {
-    x= x2 - y2 + x0;
-    y= w - x2 - y2 + y0;
-    x2= x * x;
-    y2= y * y;
-    w = (x + y) * (x + y);
-    //x2 + y2 = z
-    if (x2 + y2 >= 2 * 2)
-    //dessine pas
-      return 0.0f;
-  }
-  //dessine
-  return 1.0f;
+  return distance(point, vec3(0, 0, -5)) - 1.0;
 }
 
 void main() {
+  vec3 origin = -cameraPosition;
 
+  vec3 color = vec3(0.0f, 0.0f, 0.0f);
 
-  vec3 color = vec3(1.0f, 1.0f, 1.0f) * mandelbrot(dir);
+  float min_dist = 1000.0;
+  vec3 point = origin;
+  for (int i = 0; i < 100; i++)
+  {
+    min_dist = 1000.0;
+    float dist = distSphere(point);
+    if (dist < min_dist)
+    {
+      min_dist = dist;
+    }
+    if (min_dist < 0.01)
+    {
+      color = vec3(1.0, 0.0, 0.0);
+      break;
+    }
+    point += min_dist * dir;
+  }
+
+  //color = vec3(abs(dir.x), abs(dir.y), abs(dir.z));
   finalColor = vec4(color, 1.);
 }

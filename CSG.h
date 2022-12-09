@@ -53,6 +53,9 @@ public:
             delete object;
         }
     }
+
+    Type getType() { return type; }
+    bool isObject() { return type == Type::Obj; }
 };
 
 #endif

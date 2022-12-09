@@ -80,36 +80,48 @@ void Renderer::initOpenGL(std::string shaderBaseName){
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Renderer::draw(Camera& camera){
-  glUseProgram(programID);
-  glViewport(0,0,screenWidth,screenHeight);
+void Renderer::draw(Camera& camera, Scene& scene){
+	glUseProgram(programID);
+	glViewport(0,0,screenWidth,screenHeight);
 
-  glUniform3f(locCameraRotation,camera.getRotation().x,camera.getRotation().y,camera.getRotation().z);
-  glUniform3f(locCameraPosition,camera.getPosition().x,camera.getPosition().y,camera.getPosition().z);
-  glUniform2f(locFieldOfView, camera.getFieldOfView().x, camera.getFieldOfView().y);
-  glUniform2f(locScreenSize, screenWidth, screenHeight);
-  //glUniformMatrix4fv(locMatrixIDObject, 1, GL_FALSE, &Object[0][0]);
+	mat4 rotation = camera.getRotationMatrix();
+	glUniformMatrix4fv(locCameraRotation, 1, GL_FALSE, &rotation[0][0]);
+	glUniform3f(locCameraPosition,camera.getPosition().x,camera.getPosition().y,camera.getPosition().z);
+	glUniform2f(locFieldOfView, camera.getFieldOfView().x, camera.getFieldOfView().y);
+	glUniform2f(locScreenSize, (float)screenWidth, (float)screenHeight);
+	//glUniformMatrix4fv(locMatrixIDObject, 1, GL_FALSE, &Object[0][0]);
 
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
-  glBindVertexArray(vao);
-  glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
-  /*
-  glBegin(GL_TRIANGLES);
-  glColor3f(1.0,0.0,1.0);
-  
-  glVertex3f(-1.0, 1.0, 0.0);
-  glVertex3f(-1.0, -1.0, 0.0);
-  glVertex3f(1.0, -1.0, 0.0);
-  glVertex3f(1.0, -1.0, 0.0);
-  glVertex3f(1.0, 1.0, 0.0);
-  glVertex3f(-1.0, 1.0, 0.0);
+	/*CODE POUR ENVOYER LES INFOS DE LA SCENE AU SHADER A FAIRE ICI
+	L'objectif est d'envoyer des listes de donnees au shader
+	Pour se faire, il faudra decommenter cette partie :
+	//
+	vector<mat4> objectMatrices;
+	vector<Material> objectMaterials;
+	vector<int> objectTypes;
+	vector<float> objectDatas;
+	vector<int> csg_type;
+	vector<float> csg_value;
+	scene.getInfos(objectMatrices, objectMaterials, objectTypes, objectDatas, csg_type, csg_value);
+	
+	//
+	les parametres sont note comme ca car il faut les creer avant la fonction et les passer dedans pour qu'elle les initialise
+	
+	les donnees a envoyer (uniform ou buffer), devront respecter ce format
 
-  glEnd();
-  */
+	objectMatrices, array de mat4
+	objectMaterials, array de float, avec pour chaque Material 8 float en taille (vec4 couleur, plus 4 floats des proprietes), 
+		c'est important de connaitre sa taille exacte en unite pour les arrays qui convertissent un type
+	objectTypes, array de int, pourrait meme etre des unsigned char tellement il n'y aura pas beaucoup de types
+	objectDatas, array de float
 
-  glUseProgram(0);
+	*/
+
+	glUseProgram(0);
 }
 
 
