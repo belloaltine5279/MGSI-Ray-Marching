@@ -69,6 +69,20 @@ void scene(vec3 point, out float dist, out vec3 color, out vec3 normale)
     color = vec3(1.0, 0.0, 0.0);
     normale = n;
   }
+  sphereInfos(point, vec3(2, 0, -5), 1.0, d, n);
+  if (d < dist)
+  {
+    dist = d;
+    color = vec3(0.0, 1.0, 0.0);
+    normale = n;
+  }
+  sphereInfos(point, vec3(-2, 0, -5), 1.0, d, n);
+  if (d < dist)
+  {
+    dist = d;
+    color = vec3(0.0, 0.0, 1.0);
+    normale = n;
+  }
 }
 
 void main() {
