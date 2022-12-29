@@ -18,11 +18,18 @@ float max_dist = 10000.0;
 
 vec3 lightPos = vec3(2.0, -3.0, -2.0);
 
-vec3 movement = vec3(-0.1, 0.0, 0.0);
+vec3 movement = vec3(0.0, 0.2, 0.0);
 
-float rand(vec2 co)
+float rand(vec3 co)
 {
-  return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+  return fract(sin(dot(co.xy, vec2(12.9898, co.z))) * 43758.5453);
+}
+
+
+vec3 movementBlur(vec3 point, vec3 dir, vec3 movement)
+{
+  float rnd = rand(dir);
+  return rnd * movement;
 }
 
 float sphere(vec3 point, vec3 position, float radius)
@@ -63,18 +70,17 @@ void sphereInfos(vec3 point, vec3 position, float radius, out float dist, out ve
   normale = vec3(dx, dy, dz) / epsilon;
 }
 
-void scene(vec3 point, out float dist, out vec3 color, out vec3 normale)
+void scene(vec3 point, vec3 dir, out float dist, out vec3 color, out vec3 normale)
 {
-  float rnd = rand(vec2(point.x, point.y));
   dist = max_dist;
   float d;
   vec3 n;
-  vec3 mblur =  + movement * (1 - abs(dot(movement, dir))) * abs(rnd);
+  vec3 mblur = movementBlur(point, dir, movement);
   sphereInfos(point, vec3(0, 0, -5) + mblur, 1.0, d, n);
   if (d < dist)
   {
     dist = d;
-    color = vec3(1.0, (rnd), 0.0);
+    color = vec3(1.0, 0.0, 0.0);
     normale = n;
   }
   sphereInfos(point, vec3(2, 0, -5), 1.0, d, n);
@@ -100,17 +106,18 @@ void main() {
 
   float min_dist = max_dist;
   vec3 point = origin;
+  vec3 direction = dir;
 
   for (float step = 0; step < max_steps; step += 1.0)
   {
     float d;
     vec3 c;
     vec3 n;
-    scene(point, d, c, n);
-    //movementBlur(point, dir, n, movement, d);
+    scene(point, direction, d, c, n);
+    //movementBlur(point, direction, n, movement, d);
     if (d <= epsilon)
     {
-      vec3 light_dir = normalize(lightPos - point); //reflect(dir, n);
+      vec3 light_dir = normalize(lightPos - point); //reflect(direction, n);
       vec3 p = point + n * epsilon;
       float light_dist = max_dist;
       vec3 lc;
@@ -118,7 +125,7 @@ void main() {
       float light_step = 0;
       for (light_step = 0; light_step <= max_light_steps; light_step += 1.0)
       {
-        scene(p, light_dist, lc, ln);
+        scene(p, light_dir, light_dist, lc, ln);
         if (light_dist <= epsilon)
         {
           break;
@@ -129,7 +136,7 @@ void main() {
       color = c * pow(1.0 - step / max_steps, 0.8) * pow(light, 3.0);
       break;
     }
-    point += d * dir;
+    point += d * direction;
   }
 
   //color = vec3(abs(dir.x), abs(dir.y), abs(dir.z));
