@@ -58,6 +58,20 @@ void Renderer::initOpenGL(std::string shaderBaseName){
   locCameraRotation = glGetUniformLocation(programID, "cameraRotation");
   locFieldOfView = glGetUniformLocation(programID, "fieldOfView");
   locScreenSize = glGetUniformLocation(programID, "screen_size");
+
+  locObjectMatrices = glGetUniformLocation(programID, "objectMatrices");
+  locObjectTypes = glGetUniformLocation(programID, "objectTypes");
+  locObjectDatas = glGetUniformLocation(programID, "objectDatas");
+  locCsg_types = glGetUniformLocation(programID, "csg_type");
+  locCsg_values = glGetUniformLocation(programID, "csg_data");
+  
+  //material
+  locColor = glGetUniformLocation(programID, "color");
+  locDiffuse = glGetUniformLocation(programID, "diffuse");
+  locSpecular = glGetUniformLocation(programID, "specular");
+  locReflection = glGetUniformLocation(programID, "reflection");
+  locRoughness = glGetUniformLocation(programID, "roughness");
+  
   //locMatrixIDObject = glGetUniformLocation(programID, "Object");
 
   glGenVertexArrays(1, &vao);
@@ -96,12 +110,12 @@ void Renderer::draw(Camera& camera, Scene& scene){
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
-	/*CODE POUR ENVOYER LES INFOS DE LA SCENE AU SHADER A FAIRE ICI
-	L'objectif est d'envoyer des listes de donnees au shader
-	Pour se faire, il faudra decommenter cette partie :
+	// /*CODE POUR ENVOYER LES INFOS DE LA SCENE AU SHADER A FAIRE ICI
+	//L'objectif est d'envoyer des listes de donnees au shader
+	//Pour se faire, il faudra decommenter cette partie :
 	//
 	vector<mat4> objectMatrices;
-	vector<Material> objectMaterials;
+	vector<Material> objectMaterials; 	
 	vector<int> objectTypes;
 	vector<float> objectDatas;
 	vector<int> csg_type;
@@ -109,10 +123,44 @@ void Renderer::draw(Camera& camera, Scene& scene){
 	scene.getInfos(objectMatrices, objectMaterials, objectTypes, objectDatas, csg_type, csg_value);
 	
 	//
-	les parametres sont note comme ca car il faut les creer avant la fonction et les passer dedans pour qu'elle les initialise
-	
-	les donnees a envoyer (uniform ou buffer), devront respecter ce format
 
+	glUniformMatrix4fv(locObjectMatrices, objectMatrices.size() * sizeof(mat4), 
+	GL_FALSE, &objectMatrices.data()[0][0][0]);
+
+	vector<float> colors(objectMaterials.size() * 4);
+	vector<float> diffuse(objectMaterials.size());
+	vector<float> specular(objectMaterials.size());
+	vector<float> reflection(objectMaterials.size());
+	vector<float> roughness(objectMaterials.size());
+	
+	for(int i = 0; i < objectMaterials.size(); i++){
+		colors[i*4+0] = objectMaterials[i].color.x;
+		colors[i*4+1] = objectMaterials[i].color.y;
+		colors[i*4+2] = objectMaterials[i].color.z;
+		colors[i*4+3] = objectMaterials[i].color.w;
+		diffuse[i] = objectMaterials[i].diffuse;
+		specular[i] = objectMaterials[i].specular;
+		reflection[i] = objectMaterials[i].reflection;
+		roughness[i] = objectMaterials[i].roughness;
+	}
+
+	glUniform4fv(locColor, colors.size() * sizeof(float), colors.data());
+	glUniform1fv(locDiffuse, diffuse.size() * sizeof(float), diffuse.data());
+	glUniform1fv(locSpecular, specular.size() * sizeof(float), specular.data());
+	glUniform1fv(locReflection, reflection.size() * sizeof(float), reflection.data());
+	glUniform1fv(locRoughness, roughness.size() * sizeof(float), roughness.data());
+
+
+	glUniform1iv(locObjectTypes, objectTypes.size() * sizeof(int), objectTypes.data());
+	glUniform1fv(locObjectDatas, objectDatas.size() * sizeof(float), objectDatas.data());
+	
+	glUniform1iv(locCsg_types, csg_type.size() * sizeof(int), csg_type.data());
+	glUniform1fv(locCsg_values, csg_value.size() * sizeof(float), csg_value.data());
+
+
+
+	/*les parametres sont note comme ca car il faut les creer avant la fonction et les passer dedans pour qu'elle les initialise
+	les donnees a envoyer (uniform ou buffer), devront respecter ce format
 	objectMatrices, array de mat4
 	objectMaterials, array de float, avec pour chaque Material 8 float en taille (vec4 couleur, plus 4 floats des proprietes), 
 		c'est important de connaitre sa taille exacte en unite pour les arrays qui convertissent un type
@@ -120,6 +168,10 @@ void Renderer::draw(Camera& camera, Scene& scene){
 	objectDatas, array de float
 
 	*/
+
+
+
+
 
 	glUseProgram(0);
 }
