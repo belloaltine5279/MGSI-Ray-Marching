@@ -8,7 +8,7 @@ using namespace glm;
 
 Camera::Camera(){
 
-    flag = false ;
+    flag = true ;
     // si on change de position initial dans la fonction setPosition
     // dans la fonction moveCamera on change la valeur
     // flag par true ;
@@ -26,6 +26,11 @@ Camera::Camera(const vec3 &position, const vec3 &rotation,
     this->fieldOfView = fieldOfView ;
     //this->translation = translation ;
     //this->lookAt = lookat;
+
+    flag = true ;
+    // si on change de position initial dans la fonction setPosition
+    // dans la fonction moveCamera on change la valeur
+    // flag par true ;
 }
 
 void Camera::setFieldOfView(const vec2 &a) {
