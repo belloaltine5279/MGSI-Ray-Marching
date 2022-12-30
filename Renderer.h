@@ -55,6 +55,7 @@ private:
 
   int locTime;
   int locDeltaTime;
+  int locMoving;
 
   int locCameraPosition;
   int locCameraRotation;

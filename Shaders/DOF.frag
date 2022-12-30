@@ -28,12 +28,13 @@ float sphere(vec3 point, vec3 position, float radius)
 {
   return distance(point, position) -radius;
 }
-float mandelbulb(vec3 point)
+float mandelbulb(vec3 point, vec3 position, float radius)
 {
+  point -= position;
   vec3 z = point;
   float dr = 1.0;
   float r;
-  float power = 2.0;
+  float power = 3.0;
 
   for (int i = 0; i < 15; i++)
   {
@@ -50,7 +51,7 @@ float mandelbulb(vec3 point)
     z = zr * vec3(sin(theta) * cos(phi), sin(phi) * sin(theta), cos(theta));
     z += point;
   }
-  return 0.5 * log(r) * r / dr;
+  return 0.5 * log(r) * r / dr * radius;
 }
 
 void sphereInfos(vec3 point, vec3 position, float radius, out float dist, out vec3 normale)
@@ -61,12 +62,21 @@ void sphereInfos(vec3 point, vec3 position, float radius, out float dist, out ve
   float dz = sphere(point + vec3(0.0, 0.0, epsilon), position, radius) - dist;
   normale = vec3(dx, dy, dz) / epsilon;
 }
+void mandelbulbInfos(vec3 point, vec3 position, float radius, out float dist, out vec3 normale)
+{
+  dist = mandelbulb(point, position, radius);
+  float dx = mandelbulb(point + vec3(epsilon, 0.0, 0.0), position, radius) - dist;
+  float dy = mandelbulb(point + vec3(0.0, epsilon, 0.0), position, radius) - dist;
+  float dz = mandelbulb(point + vec3(0.0, 0.0, epsilon), position, radius) - dist;
+  normale = vec3(dx, dy, dz) / epsilon;
+}
 
 void scene(vec3 point, out float dist, out vec3 color, out vec3 normale)
 {
   dist = max_dist;
   float d;
   vec3 n;
+  // /*
   sphereInfos(point, vec3(0, 0, -5), 1.0, d, n);
   if (d < dist)
   {
@@ -88,6 +98,16 @@ void scene(vec3 point, out float dist, out vec3 color, out vec3 normale)
     color = vec3(0.0, 0.5, 1.0);
     normale = n;
   }
+  //*/
+  /*
+  mandelbulbInfos(point, vec3(0, 0, -5), 1.0, d, n);
+  if (d < dist)
+  {
+    dist = d;
+    color = vec3(1.0, 0.0, 1.0);
+    normale = n;
+  }
+  */
 }
 
 
@@ -97,6 +117,8 @@ float rand(float co) { return fract(sin(co*(91.3458)) * 47453.5453); }
 float rand(vec2 co){ return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453); }
 float rand(vec3 co){ return rand(co.xy+rand(co.z)); }
 float rand(vec3 co, float time){ return rand(co.xy+rand(co.z*time)); }
+
+uniform float moving;
 
 void main() {
   vec3 origin = -cameraPosition;
@@ -109,8 +131,17 @@ void main() {
   //déplacer le point origine de manière aléatoire puis déterminer une nouvelle direction entre l'origine et le focalPoint
   vec3 FocalPoint = dir * 5 + point;
   vec3 offsetpoint = vec3((rand(dir,time)-0.5)*2.0,(rand(dir+dir,time)-0.5)*2.0,(rand(dir+dir*2,time)-0.5)*2.0);
-  point += offsetpoint * 0.3;
+  point += offsetpoint * 0.2;
   vec3 focaldir = normalize(FocalPoint - point);
+
+
+  if (moving > 0.0)
+  {
+    epsilon *= 50.0;
+    max_steps /= 3.0;
+    max_light_steps /= 5.0;
+  }
+
   for (float step = 0; step < max_steps; step += 1.0)
   {
     float d;

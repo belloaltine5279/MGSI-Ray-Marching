@@ -6,6 +6,7 @@ uniform vec2 fielOfView;
 uniform vec3 cameraPosition;
 
 uniform float time;
+uniform float moving;
 
 in vec2 screen;
 in vec3 dir;
@@ -111,6 +112,13 @@ void main() {
   vec3 direction = dir;
 
   bool hit = false;
+  
+  if (moving > 0.0)
+  {
+    epsilon *= 50.0;
+    max_steps /= 3.0;
+    max_light_steps /= 5.0;
+  }
 
   for (float step = 0; step < max_steps; step += 1.0)
   {
@@ -136,8 +144,8 @@ void main() {
         }
         p += light_dist * light_dir;
       }
-      float light = light_step / max_light_steps;
-      color = c * pow(1.0 - step / max_steps, 0.8) * pow(light, 3.0);
+      float light = light_step / (max_light_steps);
+      color = c * pow(1.0 - step / (max_steps), 0.8) * pow(light, 3.0);
       hit = true;
       break;
     }

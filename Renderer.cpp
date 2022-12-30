@@ -106,6 +106,7 @@ void Renderer::initOpenGL(std::string shaderBaseName){
   //recupere id
   locDeltaTime = glGetUniformLocation(programID, "deltaTime");
   locTime = glGetUniformLocation(programID, "time");
+  locMoving = glGetUniformLocation(programID, "moving");
 
   locCameraPosition = glGetUniformLocation(programID, "cameraPosition");
   locCameraRotation = glGetUniformLocation(programID, "cameraRotation");
@@ -173,6 +174,7 @@ void Renderer::draw(Camera& camera, Scene& scene, float deltaTime){
 		camera.moveResolved();
 		redraw = true;
 	}
+	glUniform1f(locMoving, redraw ? 1.0f : 0.0f);
 
 	// /*CODE POUR ENVOYER LES INFOS DE LA SCENE AU SHADER A FAIRE ICI
 	//L'objectif est d'envoyer des listes de donnees au shader
