@@ -14,5 +14,6 @@ void main()
     vec4 currentColor = texture(currentFrame, TexCoords);
     vec4 newColor = texture(newFrame, TexCoords);
 
-    FragColor = newColor * (1 - keep) + currentColor * keep;
+    float realKeep = keep * 0.97;
+    FragColor = newColor * (1 - realKeep) + currentColor * realKeep;
 }

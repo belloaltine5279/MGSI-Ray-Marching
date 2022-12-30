@@ -109,7 +109,7 @@ void main() {
   //déplacer le point origine de manière aléatoire puis déterminer une nouvelle direction entre l'origine et le focalPoint
   vec3 FocalPoint = dir * 5 + point;
   vec3 offsetpoint = vec3((rand(dir,time)-0.5)*2.0,(rand(dir+dir,time)-0.5)*2.0,(rand(dir+dir*2,time)-0.5)*2.0);
-  point += offsetpoint * 0.1;
+  point += offsetpoint * 0.3;
   vec3 focaldir = normalize(FocalPoint - point);
   for (float step = 0; step < max_steps; step += 1.0)
   {

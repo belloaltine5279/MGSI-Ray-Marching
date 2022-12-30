@@ -256,7 +256,7 @@ void Renderer::draw(Camera& camera, Scene& scene, float deltaTime){
 		glUniform1f(keepLastFrameLocation, 0.0f);
 	}
 	else{
-		glUniform1f(keepLastFrameLocation, 0.9f);
+		glUniform1f(keepLastFrameLocation, 1.0f);
 	}
 
 	glActiveTexture(GL_TEXTURE0 + 0); // Texture unit 0

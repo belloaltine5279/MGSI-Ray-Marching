@@ -20,7 +20,7 @@ float max_dist = 10000.0;
 
 vec3 lightPos = vec3(2.0, -3.0, -2.0);
 
-vec3 movement = vec3(0.0, 0.9, 0.0);
+vec3 movement = vec3(1.9, 0.0, 0.0);
 
 float rand(vec3 co)
 {
