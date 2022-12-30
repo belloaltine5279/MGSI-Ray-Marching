@@ -96,6 +96,7 @@ void scene(vec3 point, out float dist, out vec3 color, out vec3 normale)
 float rand(float co) { return fract(sin(co*(91.3458)) * 47453.5453); }
 float rand(vec2 co){ return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453); }
 float rand(vec3 co){ return rand(co.xy+rand(co.z)); }
+float rand(vec3 co, float time){ return rand(co.xy+rand(co.z*time)); }
 
 void main() {
   vec3 origin = -cameraPosition;
@@ -107,7 +108,7 @@ void main() {
   //ici profondeur de champ, a savoir créer un focalPoint a partir de la direction initiale et de la focalDist
   //déplacer le point origine de manière aléatoire puis déterminer une nouvelle direction entre l'origine et le focalPoint
   vec3 FocalPoint = dir * 5 + point;
-  vec3 offsetpoint = vec3((rand(dir)-0.5)*2.0,(rand(dir+dir)-0.5)*2.0,(rand(dir+dir*2)-0.5)*2.0);
+  vec3 offsetpoint = vec3((rand(dir,time)-0.5)*2.0,(rand(dir+dir,time)-0.5)*2.0,(rand(dir+dir*2,time)-0.5)*2.0);
   point += offsetpoint * 0.1;
   vec3 focaldir = normalize(FocalPoint - point);
   for (float step = 0; step < max_steps; step += 1.0)
