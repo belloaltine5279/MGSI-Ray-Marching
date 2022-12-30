@@ -101,6 +101,7 @@ void Renderer::initOpenGL(std::string shaderBaseName){
   currentFrameLocation = glGetUniformLocation(framebufferProgramID, "currentFrame");
   newFrameLocation  = glGetUniformLocation(framebufferProgramID, "newFrame");
   keepLastFrameLocation = glGetUniformLocation(framebufferProgramID, "keep");
+  timeFrameLocation = glGetUniformLocation(framebufferProgramID, "time");
 
   //recupere id
   locDeltaTime = glGetUniformLocation(programID, "deltaTime");
@@ -258,6 +259,7 @@ void Renderer::draw(Camera& camera, Scene& scene, float deltaTime){
 	else{
 		glUniform1f(keepLastFrameLocation, 1.0f);
 	}
+	glUniform1f(timeFrameLocation, time);
 
 	glActiveTexture(GL_TEXTURE0 + 0); // Texture unit 0
 	glBindTexture(GL_TEXTURE_2D, finalTextureBuffer);

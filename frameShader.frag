@@ -4,16 +4,22 @@ uniform sampler2D currentFrame;  // The texture  (we'll bind to texture unit 0)
 uniform sampler2D newFrame;   // The bump-map (we'll bind to texture unit 1)
 
 uniform float keep;
+uniform float time;
 
 out vec4 FragColor;
   
 in vec2 TexCoords;
+
+float sigmoid(float x)
+{
+    return 1.0 / (1.0 + exp(-x));
+}
 
 void main()
 { 
     vec4 currentColor = texture(currentFrame, TexCoords);
     vec4 newColor = texture(newFrame, TexCoords);
 
-    float realKeep = keep * 0.97;
+    float realKeep = keep * sigmoid(time);
     FragColor = newColor * (1 - realKeep) + currentColor * realKeep;
 }

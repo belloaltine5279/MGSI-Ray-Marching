@@ -37,6 +37,7 @@ private:
   unsigned int currentFrameLocation;
   unsigned int newFrameLocation;
   unsigned int keepLastFrameLocation;
+  unsigned int timeFrameLocation;
   unsigned int framebufferProgramID;
   unsigned int basicProgramID;
 
