@@ -15,6 +15,7 @@ using namespace glm;
 #include "Camera.h"
 
 #include "Material.h"
+#include "Timer.h"
 
 #include "Objects/Sphere.h"
 
@@ -40,6 +41,7 @@ bool moveDown = false;
 
 bool fpsMode = true;
 
+int FRAME_TIME = 1;
 
 ///
 /*
@@ -73,9 +75,13 @@ int main(int argc, char** argv)
 
     CSG csg;
 
+    float deltaTime = 0.0;
+
     bool done = false;
     while (!done)
     {
+        Timer::start(FRAME_TIME);
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -123,12 +129,14 @@ int main(int argc, char** argv)
         {
             movement = normalize(movement);
             //std::cout << "moved camera (" << movement.x << "," << movement.y << "," << movement.z << ")" << std::endl;
-            camera.move(movement * 0.1f);
+            camera.move(movement * deltaTime);
         }
 
-        renderer.draw(camera, scene);
+        renderer.draw(camera, scene, deltaTime);
         //On echange les buffers
         SDL_GL_SwapBuffers();
+
+        deltaTime = Timer::end(FRAME_TIME, TIME_TYPE::MILLISECONDES) / 1000.0f;
     }
 }
 
