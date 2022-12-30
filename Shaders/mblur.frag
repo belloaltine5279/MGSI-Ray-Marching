@@ -5,6 +5,8 @@ uniform vec2 fielOfView;
 
 uniform vec3 cameraPosition;
 
+uniform float time;
+
 in vec2 screen;
 in vec3 dir;
 in vec2 coord;
@@ -18,11 +20,11 @@ float max_dist = 10000.0;
 
 vec3 lightPos = vec3(2.0, -3.0, -2.0);
 
-vec3 movement = vec3(0.0, 0.2, 0.0);
+vec3 movement = vec3(0.0, 0.9, 0.0);
 
 float rand(vec3 co)
 {
-  return fract(sin(dot(co.xy, vec2(12.9898, co.z))) * 43758.5453);
+  return fract(sin(dot(co.xy, vec2(time, co.z))) * 43758.5453);
 }
 
 
@@ -76,7 +78,7 @@ void scene(vec3 point, vec3 dir, out float dist, out vec3 color, out vec3 normal
   float d;
   vec3 n;
   vec3 mblur = movementBlur(point, dir, movement);
-  sphereInfos(point, vec3(0, 0, -5) + mblur, 1.0, d, n);
+  sphereInfos(point, vec3(0, -2, -5) + mblur, 1.0, d, n);
   if (d < dist)
   {
     dist = d;
@@ -108,6 +110,8 @@ void main() {
   vec3 point = origin;
   vec3 direction = dir;
 
+  bool hit = false;
+
   for (float step = 0; step < max_steps; step += 1.0)
   {
     float d;
@@ -134,9 +138,15 @@ void main() {
       }
       float light = light_step / max_light_steps;
       color = c * pow(1.0 - step / max_steps, 0.8) * pow(light, 3.0);
+      hit = true;
       break;
     }
     point += d * direction;
+  }
+  if (!hit)
+  {
+    discard;
+    return;
   }
 
   //color = vec3(abs(dir.x), abs(dir.y), abs(dir.z));

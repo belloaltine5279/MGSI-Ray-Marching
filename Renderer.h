@@ -24,7 +24,7 @@ public:
 
   void initOpenGL(std::string shaderBaseName);
 
-  void draw(Camera& camera, Scene& scene);
+  void draw(Camera& camera, Scene& scene, float deltaTime);
 private:
   SDL_Surface* window;
 
@@ -34,8 +34,26 @@ private:
   unsigned int vbo;
   unsigned int ebo;
 
+  unsigned int currentFrameLocation;
+  unsigned int newFrameLocation;
+  unsigned int keepLastFrameLocation;
+  unsigned int framebufferProgramID;
+  unsigned int basicProgramID;
+
+  unsigned int currentFramebuffer;
+  unsigned int newFramebuffer;
+  unsigned int currentTextureBuffer;
+  unsigned int newTextureBuffer;
+  unsigned int finalTextureBuffer;
+  int currentBufferIndex;
+
   int screenWidth;
   int screenHeight;
+
+  float time;
+
+  int locTime;
+  int locDeltaTime;
 
   int locCameraPosition;
   int locCameraRotation;
@@ -55,12 +73,13 @@ private:
   int locRoughness;
 
 
-  std::vector<vec3> vertices = {
-    vec3(-1.0, 1.0, 0.0),
-    vec3(-1.0, -1.0, 0.0),
-    vec3(1.0, -1.0, 0.0),
-    vec3(1.0, 1.0, 0.0)
+  std::vector<float> vertices = {
+    -1.0, 1.0, 0.0, 0.0, 0.0,
+    -1.0, -1.0, 0.0, 1.0, 0.0,
+    1.0, -1.0, 0.0, 1.0, 1.0,
+    1.0, 1.0, 0.0, 0.0, 1.0
   };
+  
   std::vector<unsigned int> indices = {
     0, 1, 2,
     2, 3, 0

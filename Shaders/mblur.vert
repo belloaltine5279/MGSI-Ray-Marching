@@ -7,6 +7,7 @@
 //layout(location = 1) in vec2 uv; // le location permet de dire de quel flux/canal on récupère la données
 
 in vec3 position;
+in vec2 texCoords;
 
 uniform mat4 cameraRotation;
 

@@ -42,6 +42,8 @@ Renderer::Renderer(int width, int height, std::string shaderBaseName){
   std::cout << "Version : " << glGetString (GL_VERSION) << std::endl;
 
   initOpenGL(shaderBaseName);
+
+  time = 0.0f;
 }
 Renderer::~Renderer(){
   glDeleteProgram(programID);
@@ -52,8 +54,58 @@ void Renderer::initOpenGL(std::string shaderBaseName){
   string vert = "./Shaders/" + shaderBaseName + ".vert";
   string frag = "./Shaders/" + shaderBaseName + ".frag";
   programID = LoadShaders(vert.c_str(), frag.c_str());
+  
+  framebufferProgramID = LoadShaders("./frameShader.vert", "./frameShader.frag");
+  basicProgramID = LoadShaders("./basicShader.vert", "./basicShader.frag");
+  currentBufferIndex = 0;
+
+  glGenFramebuffers(1, &newFramebuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, newFramebuffer);
+
+  // generate texture
+  glGenTextures(1, &newTextureBuffer);
+  glBindTexture(GL_TEXTURE_2D, newTextureBuffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // attach it to currently bound framebuffer object
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, newTextureBuffer, 0);  
+  
+  glGenFramebuffers(1, &currentFramebuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, currentFramebuffer);
+
+  // generate texture
+  glGenTextures(1, &currentTextureBuffer);
+  glBindTexture(GL_TEXTURE_2D, currentTextureBuffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // attach it to currently bound framebuffer object
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, currentTextureBuffer, 0);  
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  // generate texture
+  glGenTextures(1, &finalTextureBuffer);
+  glBindTexture(GL_TEXTURE_2D, finalTextureBuffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  
+  // Get the uniform variables location. You've probably already done that before...
+  currentFrameLocation = glGetUniformLocation(framebufferProgramID, "currentFrame");
+  newFrameLocation  = glGetUniformLocation(framebufferProgramID, "newFrame");
+  keepLastFrameLocation = glGetUniformLocation(framebufferProgramID, "keep");
 
   //recupere id
+  locDeltaTime = glGetUniformLocation(programID, "deltaTime");
+  locTime = glGetUniformLocation(programID, "time");
+
   locCameraPosition = glGetUniformLocation(programID, "cameraPosition");
   locCameraRotation = glGetUniformLocation(programID, "cameraRotation");
   locFieldOfView = glGetUniformLocation(programID, "fieldOfView");
@@ -83,9 +135,12 @@ void Renderer::initOpenGL(std::string shaderBaseName){
   glBindVertexArray(vao);
 
   glBindBuffer(GL_ARRAY_BUFFER, vbo);  
-  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-  glEnableVertexAttribArray(0);
+  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
+  glEnableVertexAttribArray(0);  
+  //glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec2), &uvs[0], GL_STATIC_DRAW);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
+  glEnableVertexAttribArray(1);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
@@ -94,7 +149,9 @@ void Renderer::initOpenGL(std::string shaderBaseName){
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Renderer::draw(Camera& camera, Scene& scene){
+void Renderer::draw(Camera& camera, Scene& scene, float deltaTime){
+	glBindFramebuffer(GL_FRAMEBUFFER, newFramebuffer);
+
 	glUseProgram(programID);
 	glViewport(0,0,screenWidth,screenHeight);
 
@@ -105,10 +162,16 @@ void Renderer::draw(Camera& camera, Scene& scene){
 	glUniform2f(locScreenSize, (float)screenWidth, (float)screenHeight);
 	//glUniformMatrix4fv(locMatrixIDObject, 1, GL_FALSE, &Object[0][0]);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glUniform1f(locDeltaTime, deltaTime);
+	glUniform1f(locTime, time);
+	time += deltaTime;
+	bool redraw =  false;
+	if (camera.isMoved())
+	{
+		time = 0.0f;
+		camera.moveResolved();
+		redraw = true;
+	}
 
 	// /*CODE POUR ENVOYER LES INFOS DE LA SCENE AU SHADER A FAIRE ICI
 	//L'objectif est d'envoyer des listes de donnees au shader
@@ -168,12 +231,54 @@ void Renderer::draw(Camera& camera, Scene& scene){
 	objectDatas, array de float
 
 	*/
+	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
+	//glUseProgram(0);
 
+	glBindFramebuffer(GL_FRAMEBUFFER, currentFramebuffer); // back to default
+	//return;
+	glUseProgram(framebufferProgramID);
+	glViewport(0,0,screenWidth,screenHeight);
 
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 
+	glClear(GL_COLOR_BUFFER_BIT);
+  
+	glDisable(GL_DEPTH_TEST);
 
-	glUseProgram(0);
+	glUniform1i(currentFrameLocation, 0);
+	glUniform1i(newFrameLocation, 1);
+	if (redraw)
+	{
+		glUniform1f(keepLastFrameLocation, 0.0f);
+	}
+	else{
+		glUniform1f(keepLastFrameLocation, 0.9f);
+	}
+
+	glActiveTexture(GL_TEXTURE0 + 0); // Texture unit 0
+	glBindTexture(GL_TEXTURE_2D, finalTextureBuffer);
+	glActiveTexture(GL_TEXTURE0 + 1); // Texture unit 1
+	glBindTexture(GL_TEXTURE_2D, newTextureBuffer);
+	
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+	//glActiveTexture(GL_TEXTURE0 + 0); // Texture unit 0
+	glBindTexture(GL_TEXTURE_2D, finalTextureBuffer);
+	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, screenWidth, screenHeight);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glUseProgram(basicProgramID);
+	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 
+	//glClear(GL_COLOR_BUFFER_BIT);
+	glActiveTexture(GL_TEXTURE0 + 0); // Texture unit 1
+	glBindTexture(GL_TEXTURE_2D, finalTextureBuffer);
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 }
 
 
